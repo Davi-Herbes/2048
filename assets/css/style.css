@@ -46,6 +46,9 @@ body {}
 .game-squares {
     background-color: #aaa;
     border-radius: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .game-title {
