@@ -1,4 +1,5 @@
 export const colorPalette: { [key: number]: string } = {
+    0: "#aaa",
     2: "#eee",
     4: "#ddd",
     8: "#c97f6b",

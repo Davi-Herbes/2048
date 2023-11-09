@@ -16,29 +16,38 @@ class Game {
     constructor() {
         this.squares = Array.from(document.querySelectorAll(".game-squares"));
         this.emptySquares = [];
-        this.arrowCLickFunctionality = {
-            ArrowUp() { },
-            ArrowDown() { },
-            ArrowLeft() { },
-            ArrowRight() { },
+        this.arrowCLickComands = {
+            ArrowUp: () => {
+                this.arrowCLickFunctionality("up");
+            },
+            ArrowDown: () => {
+                this.arrowCLickFunctionality("down");
+            },
+            ArrowLeft: () => {
+                this.arrowCLickFunctionality("left");
+            },
+            ArrowRight: () => {
+                this.arrowCLickFunctionality("right");
+            },
         };
     }
     start() {
         this.correctingValues();
-        this.pushEmptySquares();
-        this.newValue();
-        this.checkEmptySquares();
-        this.colorInSquare();
         this.arrowsClickCapture();
     }
     arrowsClickCapture() {
         document.onkeydown = (e) => {
-            if (Object.keys(this.arrowCLickFunctionality).includes(e.key)) {
-                this.arrowCLickFunctionality[e.key]();
+            if (Object.keys(this.arrowCLickComands).includes(e.key)) {
+                this.arrowCLickComands[e.key]();
             }
         };
     }
-    correctingValues() { }
+    correctingValues() {
+        this.checkEmptySquares();
+        this.pushEmptySquares();
+        this.newValue();
+        this.colorInSquare();
+    }
     newValue() {
         const theChosenSquare = this.emptySquares[Math.floor(Math.random() * this.emptySquares.length)];
         if (Math.floor(Math.random() * 10) === 1) {
@@ -64,8 +73,70 @@ class Game {
     }
     colorInSquare() {
         for (let i = 0; i < this.squares.length; i++) {
+            let square = this.squares[i].innerHTML;
+            if (!square)
+                square = "0";
             this.squares[i].style.backgroundColor = collorPalette_1.colorPalette[Number(this.squares[i].innerHTML)];
         }
+    }
+    arrowCLickFunctionality(direction) {
+        const linhas = [];
+        for (let i = 0; i < 4; i++) {
+            const linha = [];
+            let indice = 0;
+            switch (direction) {
+                case "up":
+                    indice = i;
+                    break;
+                case "right":
+                    indice = i + 3;
+                    break;
+            }
+            for (indice; indice < i + 13; indice += 4) {
+                console.log(indice);
+                if (this.squares[indice].innerText !== "") {
+                    linha.push(Number(this.squares[indice].innerText));
+                }
+            }
+            const novaLinha = [];
+            let numeroAnterior = linha[0];
+            if (linha.length === 1) {
+                novaLinha.push(numeroAnterior);
+            }
+            else {
+                for (let indice = 1; indice < linha.length; indice++) {
+                    const numeroAtual = linha[indice];
+                    if (numeroAnterior === 0) {
+                        numeroAnterior = numeroAtual;
+                        if (indice === linha.length - 1) {
+                            novaLinha.push(numeroAtual);
+                        }
+                    }
+                    else if (numeroAnterior === numeroAtual) {
+                        novaLinha.push(numeroAnterior + numeroAtual);
+                        numeroAnterior = 0;
+                    }
+                    else if (numeroAnterior !== numeroAtual) {
+                        novaLinha.push(numeroAnterior);
+                        numeroAnterior = numeroAtual;
+                        if (indice === linha.length - 1) {
+                            novaLinha.push(numeroAtual);
+                        }
+                    }
+                }
+            }
+            linhas.push(novaLinha);
+        }
+        console.log(linhas);
+        let x = 0;
+        for (let i = 0; i < this.squares.length; i += 4) {
+            this.squares[i].innerText = `${linhas[0][x] || ""}`;
+            this.squares[i + 1].innerText = `${linhas[1][x] || ""}`;
+            this.squares[i + 2].innerText = `${linhas[2][x] || ""}`;
+            this.squares[i + 3].innerText = `${linhas[3][x] || ""}`;
+            x++;
+        }
+        this.correctingValues();
     }
 }
 exports.Game = Game;
@@ -84,6 +155,7 @@ exports.game = new Game();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.colorPalette = void 0;
 exports.colorPalette = {
+    0: "#aaa",
     2: "#eee",
     4: "#ddd",
     8: "#c97f6b",
