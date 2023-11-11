@@ -1,4 +1,8 @@
 type Div = HTMLDivElement;
+type Direction = "up" | "down" | "right" | "left";
+
+const horizontalDirection = ["right", "left"];
+const verticalDirection = ["up", "down"];
 
 // É uma forma de fazer com que a chave tenha o índice que você quer
 import { colorPalette } from "./collorPalette";
@@ -23,6 +27,54 @@ export class Game {
         },
     };
 
+    transformingValues: { [key: string]: (linhas: number[][]) => void } = {
+        up: (linhas) => {
+            console.log(this.emptySquares.length);
+
+            let x = 0;
+            for (let i = 0; i < this.squares.length; i += 4) {
+                this.squares[i].innerText = `${linhas[0][x] || ""}`;
+                this.squares[i + 1].innerText = `${linhas[1][x] || ""}`;
+                this.squares[i + 2].innerText = `${linhas[2][x] || ""}`;
+                this.squares[i + 3].innerText = `${linhas[3][x] || ""}`;
+
+                x++;
+            }
+        },
+
+        down: (linhas) => {
+            let x = 0;
+            for (let i = this.squares.length - 1; i >= 0; i -= 4) {
+                this.squares[i].innerText = `${linhas[3][x] || ""}`;
+                this.squares[i - 1].innerText = `${linhas[2][x] || ""}`;
+                this.squares[i - 2].innerText = `${linhas[1][x] || ""}`;
+                this.squares[i - 3].innerText = `${linhas[0][x] || ""}`;
+
+                x++;
+            }
+        },
+        right: (linhas) => {
+            let x = 0;
+            for (let i = 0; i < this.squares.length; i += 4) {
+                this.squares[i].innerText = `${linhas[x][3] || ""}`;
+                this.squares[i + 1].innerText = `${linhas[x][2] || ""}`;
+                this.squares[i + 2].innerText = `${linhas[x][1] || ""}`;
+                this.squares[i + 3].innerText = `${linhas[x][0] || ""}`;
+                x++;
+            }
+        },
+        left: (linhas) => {
+            let x = 0;
+            for (let i = 0; i < this.squares.length; i += 4) {
+                this.squares[i].innerText = `${linhas[x][0] || ""}`;
+                this.squares[i + 1].innerText = `${linhas[x][1] || ""}`;
+                this.squares[i + 2].innerText = `${linhas[x][2] || ""}`;
+                this.squares[i + 3].innerText = `${linhas[x][3] || ""}`;
+                x++;
+            }
+        },
+    };
+
     start() {
         this.correctingValues();
         this.arrowsClickCapture();
@@ -39,8 +91,8 @@ export class Game {
     }
 
     correctingValues() {
-        this.checkEmptySquares();
         this.pushEmptySquares();
+        this.checkEmptySquares();
         this.newValue();
         this.colorInSquare();
     }
@@ -60,7 +112,7 @@ export class Game {
     // Adiciona os quadrados que estão vazio no array
     pushEmptySquares() {
         for (let i = 0; i < this.squares.length; i++) {
-            if (this.squares[i].innerHTML === "") {
+            if (this.squares[i].innerHTML === "" && !this.emptySquares.includes(this.squares[i])) {
                 this.emptySquares.push(this.squares[i]);
             }
         }
@@ -69,7 +121,7 @@ export class Game {
     // Checa se os quadrados que estão no array foram preenchidos
     checkEmptySquares() {
         for (let i = 0; i < this.emptySquares.length; i++) {
-            if (this.emptySquares[i].innerHTML !== "") {
+            if (this.emptySquares[i].innerText !== "") {
                 this.emptySquares.splice(i, 1);
             }
         }
@@ -85,30 +137,31 @@ export class Game {
         }
     }
 
-    arrowCLickFunctionality(direction: string) {
+    arrowCLickFunctionality(direction: Direction) {
         const linhas: number[][] = [];
 
         // A função desse for é ir em cada linha e criar um array que contém os novos valores dessa nova linha e no final colocar no array linhas as novas linhas geradas
         for (let i = 0; i < 4; i++) {
             const linha: number[] = [];
 
-            let indice = 0;
-
-            switch (direction) {
-                case "up":
-                    indice = i;
-                    break;
-                case "right":
-                    indice = i + 3;
-                    break;
-            }
-
-            for (indice; indice < i + 13; indice += 4) {
-                console.log(indice);
-                if (this.squares[indice].innerText !== "") {
-                    linha.push(Number(this.squares[indice].innerText));
+            if (verticalDirection.includes(direction)) {
+                for (let indice = i; indice < i + 13; indice += 4) {
+                    if (this.squares[indice].innerText !== "") {
+                        linha.push(Number(this.squares[indice].innerText));
+                    }
                 }
             }
+
+            if (horizontalDirection.includes(direction)) {
+                for (let indice = i * 4; indice < i * 4 + 4; indice++) {
+                    if (this.squares[indice].innerText !== "") {
+                        linha.push(Number(this.squares[indice].innerText));
+                    }
+                }
+                console.log(linha);
+            }
+
+            if (direction === "down" || direction === "right") linha.reverse();
 
             const novaLinha: number[] = [];
 
@@ -142,18 +195,11 @@ export class Game {
             }
             linhas.push(novaLinha);
         }
-        console.log(linhas);
 
         // A função desse for é passar em cada quadrado e colocar o valor novo que ele deve receber
-        let x = 0;
-        for (let i = 0; i < this.squares.length; i += 4) {
-            this.squares[i].innerText = `${linhas[0][x] || ""}`;
-            this.squares[i + 1].innerText = `${linhas[1][x] || ""}`;
-            this.squares[i + 2].innerText = `${linhas[2][x] || ""}`;
-            this.squares[i + 3].innerText = `${linhas[3][x] || ""}`;
 
-            x++;
-        }
+        this.transformingValues[direction](linhas);
+
         this.correctingValues();
     }
 }

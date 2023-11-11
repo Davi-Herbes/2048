@@ -11,6 +11,8 @@
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.game = exports.Game = void 0;
+const horizontalDirection = ["right", "left"];
+const verticalDirection = ["up", "down"];
 const collorPalette_1 = __webpack_require__(/*! ./collorPalette */ "./src/collorPalette.ts");
 class Game {
     constructor() {
@@ -30,6 +32,49 @@ class Game {
                 this.arrowCLickFunctionality("right");
             },
         };
+        this.transformingValues = {
+            up: (linhas) => {
+                console.log(this.emptySquares.length);
+                let x = 0;
+                for (let i = 0; i < this.squares.length; i += 4) {
+                    this.squares[i].innerText = `${linhas[0][x] || ""}`;
+                    this.squares[i + 1].innerText = `${linhas[1][x] || ""}`;
+                    this.squares[i + 2].innerText = `${linhas[2][x] || ""}`;
+                    this.squares[i + 3].innerText = `${linhas[3][x] || ""}`;
+                    x++;
+                }
+            },
+            down: (linhas) => {
+                let x = 0;
+                for (let i = this.squares.length - 1; i >= 0; i -= 4) {
+                    this.squares[i].innerText = `${linhas[3][x] || ""}`;
+                    this.squares[i - 1].innerText = `${linhas[2][x] || ""}`;
+                    this.squares[i - 2].innerText = `${linhas[1][x] || ""}`;
+                    this.squares[i - 3].innerText = `${linhas[0][x] || ""}`;
+                    x++;
+                }
+            },
+            right: (linhas) => {
+                let x = 0;
+                for (let i = 0; i < this.squares.length; i += 4) {
+                    this.squares[i].innerText = `${linhas[x][3] || ""}`;
+                    this.squares[i + 1].innerText = `${linhas[x][2] || ""}`;
+                    this.squares[i + 2].innerText = `${linhas[x][1] || ""}`;
+                    this.squares[i + 3].innerText = `${linhas[x][0] || ""}`;
+                    x++;
+                }
+            },
+            left: (linhas) => {
+                let x = 0;
+                for (let i = 0; i < this.squares.length; i += 4) {
+                    this.squares[i].innerText = `${linhas[x][0] || ""}`;
+                    this.squares[i + 1].innerText = `${linhas[x][1] || ""}`;
+                    this.squares[i + 2].innerText = `${linhas[x][2] || ""}`;
+                    this.squares[i + 3].innerText = `${linhas[x][3] || ""}`;
+                    x++;
+                }
+            },
+        };
     }
     start() {
         this.correctingValues();
@@ -43,8 +88,8 @@ class Game {
         };
     }
     correctingValues() {
-        this.checkEmptySquares();
         this.pushEmptySquares();
+        this.checkEmptySquares();
         this.newValue();
         this.colorInSquare();
     }
@@ -59,14 +104,14 @@ class Game {
     }
     pushEmptySquares() {
         for (let i = 0; i < this.squares.length; i++) {
-            if (this.squares[i].innerHTML === "") {
+            if (this.squares[i].innerHTML === "" && !this.emptySquares.includes(this.squares[i])) {
                 this.emptySquares.push(this.squares[i]);
             }
         }
     }
     checkEmptySquares() {
         for (let i = 0; i < this.emptySquares.length; i++) {
-            if (this.emptySquares[i].innerHTML !== "") {
+            if (this.emptySquares[i].innerText !== "") {
                 this.emptySquares.splice(i, 1);
             }
         }
@@ -83,21 +128,23 @@ class Game {
         const linhas = [];
         for (let i = 0; i < 4; i++) {
             const linha = [];
-            let indice = 0;
-            switch (direction) {
-                case "up":
-                    indice = i;
-                    break;
-                case "right":
-                    indice = i + 3;
-                    break;
-            }
-            for (indice; indice < i + 13; indice += 4) {
-                console.log(indice);
-                if (this.squares[indice].innerText !== "") {
-                    linha.push(Number(this.squares[indice].innerText));
+            if (verticalDirection.includes(direction)) {
+                for (let indice = i; indice < i + 13; indice += 4) {
+                    if (this.squares[indice].innerText !== "") {
+                        linha.push(Number(this.squares[indice].innerText));
+                    }
                 }
             }
+            if (horizontalDirection.includes(direction)) {
+                for (let indice = i * 4; indice < i * 4 + 4; indice++) {
+                    if (this.squares[indice].innerText !== "") {
+                        linha.push(Number(this.squares[indice].innerText));
+                    }
+                }
+                console.log(linha);
+            }
+            if (direction === "down" || direction === "right")
+                linha.reverse();
             const novaLinha = [];
             let numeroAnterior = linha[0];
             if (linha.length === 1) {
@@ -127,15 +174,7 @@ class Game {
             }
             linhas.push(novaLinha);
         }
-        console.log(linhas);
-        let x = 0;
-        for (let i = 0; i < this.squares.length; i += 4) {
-            this.squares[i].innerText = `${linhas[0][x] || ""}`;
-            this.squares[i + 1].innerText = `${linhas[1][x] || ""}`;
-            this.squares[i + 2].innerText = `${linhas[2][x] || ""}`;
-            this.squares[i + 3].innerText = `${linhas[3][x] || ""}`;
-            x++;
-        }
+        this.transformingValues[direction](linhas);
         this.correctingValues();
     }
 }
