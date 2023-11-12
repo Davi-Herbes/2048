@@ -18,6 +18,7 @@ class Game {
     constructor() {
         this.squares = Array.from(document.querySelectorAll(".game-squares"));
         this.emptySquares = [];
+        this.jogadas = [];
         this.arrowCLickComands = {
             ArrowUp: () => {
                 this.arrowCLickFunctionality("up");
@@ -34,7 +35,6 @@ class Game {
         };
         this.transformingValues = {
             up: (linhas) => {
-                console.log(this.emptySquares.length);
                 let x = 0;
                 for (let i = 0; i < this.squares.length; i += 4) {
                     this.squares[i].innerText = `${linhas[0][x] || ""}`;
@@ -78,20 +78,65 @@ class Game {
     }
     start() {
         this.correctingValues();
+        this.jogadas.push(this.returnInnerText(this.squares));
         this.arrowsClickCapture();
+        this.mouseClickCapture();
+        this.undo();
     }
     arrowsClickCapture() {
         document.onkeydown = (e) => {
             if (Object.keys(this.arrowCLickComands).includes(e.key)) {
-                this.arrowCLickComands[e.key]();
+                this.arrowCLickComands[`${e.key}`]();
             }
         };
     }
-    correctingValues() {
+    mouseClickCapture() {
+        for (let i = 0; i < this.squares.length; i++) {
+            this.squares[i].oncontextmenu = (e) => {
+                e.preventDefault();
+                const target = e.target;
+                target.innerText = "";
+                this.correctingValues(false);
+            };
+            this.squares[i].onclick = (e) => {
+                this.mouseClickFunctionality(e.target);
+            };
+        }
+    }
+    mouseClickFunctionality(target) {
+        const element = target;
+        if (target) {
+            const input = document.createElement("input");
+            element.appendChild(input);
+            input.focus();
+            input.onchange = () => {
+                element.removeChild(input);
+                element.innerHTML = input.value;
+                this.colorInSquare();
+                this.squareFontColor();
+                this.jogadas.push(this.returnInnerText(this.squares));
+            };
+        }
+    }
+    undo() {
+        const button = document.querySelector(".desfazer");
+        button.onclick = () => {
+            if (this.jogadas.length === 1)
+                return;
+            this.jogadas.pop();
+            const jogada = this.jogadas[this.jogadas.length - 1];
+            for (let i = 0; i < jogada.length; i++) {
+                this.squares[i].innerText = jogada[i];
+            }
+            this.correctingValues(false);
+        };
+    }
+    correctingValues(newValue = true) {
         this.pushEmptySquares();
-        this.checkEmptySquares();
-        this.newValue();
+        if (newValue)
+            this.newValue();
         this.colorInSquare();
+        this.squareFontColor();
     }
     newValue() {
         const theChosenSquare = this.emptySquares[Math.floor(Math.random() * this.emptySquares.length)];
@@ -103,16 +148,10 @@ class Game {
         }
     }
     pushEmptySquares() {
+        this.emptySquares = [];
         for (let i = 0; i < this.squares.length; i++) {
-            if (this.squares[i].innerHTML === "" && !this.emptySquares.includes(this.squares[i])) {
+            if (this.squares[i].innerText === "") {
                 this.emptySquares.push(this.squares[i]);
-            }
-        }
-    }
-    checkEmptySquares() {
-        for (let i = 0; i < this.emptySquares.length; i++) {
-            if (this.emptySquares[i].innerText !== "") {
-                this.emptySquares.splice(i, 1);
             }
         }
     }
@@ -123,6 +162,26 @@ class Game {
                 square = "0";
             this.squares[i].style.backgroundColor = collorPalette_1.colorPalette[Number(this.squares[i].innerHTML)];
         }
+    }
+    squareFontColor() {
+        for (let i = 0; i < this.squares.length; i++) {
+            const square = this.squares[i].innerText;
+            if (Number(square) > 4)
+                this.squares[i].style.color = "#fff";
+            else
+                this.squares[i].style.color = "#000";
+        }
+    }
+    returnInnerText(squares) {
+        const texts = [];
+        for (let i = 0; i < squares.length; i++) {
+            const square = squares[i];
+            texts.push(square.innerText);
+        }
+        return texts;
+    }
+    endGame() {
+        alert("ACABOU");
     }
     arrowCLickFunctionality(direction) {
         const linhas = [];
@@ -141,7 +200,6 @@ class Game {
                         linha.push(Number(this.squares[indice].innerText));
                     }
                 }
-                console.log(linha);
             }
             if (direction === "down" || direction === "right")
                 linha.reverse();
@@ -175,7 +233,13 @@ class Game {
             linhas.push(novaLinha);
         }
         this.transformingValues[direction](linhas);
-        this.correctingValues();
+        const opa = this.returnInnerText(this.squares).every((val, i) => {
+            return val === this.jogadas[this.jogadas.length - 1][i];
+        });
+        if (!opa) {
+            this.correctingValues();
+            this.jogadas.push(this.returnInnerText(this.squares));
+        }
     }
 }
 exports.Game = Game;
@@ -197,15 +261,16 @@ exports.colorPalette = {
     0: "#aaa",
     2: "#eee",
     4: "#ddd",
-    8: "#c97f6b",
-    16: "#a65f4c",
-    32: "#8c362d",
-    64: "#750f05",
+    8: "#fc6b5d",
+    16: "#de5347",
+    32: "#961f0b",
+    64: "#ab0000",
     128: "#d1c690",
     256: "#bdad60",
     512: "#9c8922",
     1024: "#73620a",
     2048: "#73620a",
+    3000: "#f00",
 };
 
 

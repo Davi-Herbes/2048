@@ -49,7 +49,23 @@ body {}
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-weight: 100;
 }
+
+.hover:hover {
+    filter: brightness(0.7)
+}
+
+.game-squares input {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    height: 100%;
+    width: 50%
+}
+
 
 .game-title {
     height: 10vh;
@@ -61,3 +77,14 @@ body {}
     font-weight: bold;
 }
 
+.desfazer {
+    width: 40vh;
+    height: 5vh;
+    margin: 15px auto;
+    border: none;
+    background-color: rgb(26, 71, 82);
+    font-family: sans-serif;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
